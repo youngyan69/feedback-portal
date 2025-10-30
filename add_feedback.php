@@ -2,21 +2,18 @@
 session_start();
 include 'db.php';
 
-// Allow testing without login
-// Normally, this would be: $user_id = $_SESSION['id'];
-$user_id = 1; // TEMP for testing — change later to $_SESSION['id']
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $course_name = $conn->real_escape_string($_POST['course_name']);
-    $comment = $conn->real_escape_string($_POST['comment']);
-    $rating = (int) $_POST['rating'];
+    $user_id = $_SESSION['user_id'];
+    $message = mysqli_real_escape_string($conn, $_POST['message']);
 
-    $sql = "INSERT INTO feedback (user_id, course_name, comment, rating, created_at) 
-            VALUES ('$user_id', '$course_name', '$comment', '$rating', NOW())";
-
-    if ($conn->query($sql)) {
-        header("Location: dashboard.php?success=1");
-        exit();
+    $query = "INSERT INTO feedback (user_id, message, created_at) VALUES ('$user_id', '$message', NOW())";
+    if ($conn->query($query)) {
+        header("Location: student_dashboard.php?success=1");
     } else {
         echo "Error: " . $conn->error;
     }
