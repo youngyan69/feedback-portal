@@ -1,0 +1,75 @@
+<?php
+session_start();
+include 'db.php';
+
+if (!isset($_GET['id'])) {
+    die("Reply ID is missing.");
+}
+
+$reply_id = intval($_GET['id']);
+
+// Fetch reply info with related feedback
+$query = "
+    SELECT r.*, f.course_name, f.comment, u.name AS student_name, u.email
+    FROM replies r
+    JOIN feedback f ON r.feedback_id = f.id
+    JOIN users u ON f.user_id = u.id
+    WHERE r.id = $reply_id
+";
+$replyData = $conn->query($query)->fetch_assoc();
+
+if (!$replyData) {
+    die("Reply not found.");
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $newReply = trim($_POST['reply']);
+    if (!empty($newReply)) {
+        $stmt = $conn->prepare("UPDATE replies SET reply = ? WHERE id = ?");
+        $stmt->bind_param("si", $newReply, $reply_id);
+        if ($stmt->execute()) {
+            header("Location: admin_dashboard.php?msg=ReplyUpdated");
+            exit();
+        } else {
+            $error = "Error updating reply: " . $conn->error;
+        }
+    } else {
+        $error = "Reply cannot be empty.";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Reply</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<?php include('admin_sidebar.php'); ?>
+
+<div class="main-content">
+    <h2>Edit Reply</h2>
+
+    <div class="feedback-card">
+        <h3><?php echo htmlspecialchars($replyData['student_name']); ?> (<?php echo htmlspecialchars($replyData['email']); ?>)</h3>
+        <p><strong>Course:</strong> <?php echo htmlspecialchars($replyData['course_name']); ?></p>
+        <p><strong>Feedback:</strong> <?php echo htmlspecialchars($replyData['comment']); ?></p>
+
+        <form method="POST" style="margin-top:20px;">
+            <textarea name="reply" rows="5" required><?php echo htmlspecialchars($replyData['reply']); ?></textarea><br>
+            <button type="submit" class="reply-btn">Update Reply</button>
+            <a href="admin_dashboard.php" class="cancel-btn">Cancel</a>
+        </form>
+
+        <?php if (isset($error)): ?>
+            <p style="color:red;"><?php echo $error; ?></p>
+        <?php endif; ?>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,18 +1,24 @@
 <?php
-include 'db.php';
 session_start();
+include 'db.php';
 
-$user_id = $_SESSION['user_id'] ?? 1; // temporary for testing
+$user_id = $_SESSION['user_id'] ?? 1; // use real session ID in production
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $course_name = $_POST['course_name'];
-    $rating = $_POST['rating'];
-    $comment = $_POST['comment'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $course = $conn->real_escape_string($_POST['course_name'] ?? '');
+    $comment = $conn->real_escape_string($_POST['comment'] ?? '');
+    $rating = intval($_POST['rating'] ?? 0);
 
-    $stmt = $conn->prepare("INSERT INTO feedback (user_id, course_name, rating, comment, created_at) VALUES (?, ?, ?, ?, NOW())");
-    $stmt->bind_param("isis", $user_id, $course_name, $rating, $comment);
-    $stmt->execute();
+    // status 'sent' by default
+    $stmt = $conn->prepare("INSERT INTO feedback (user_id, course_name, rating, comment, status, created_at) VALUES (?, ?, ?, ?, 'sent', NOW())");
+    $stmt->bind_param("isiss", $user_id, $course, $rating, $comment);
+    if ($stmt->execute()) {
+        header("Location: dashboard.php?success=1");
+        exit();
+    } else {
+        echo "Error saving feedback: " . $conn->error;
+    }
+} else {
     header("Location: dashboard.php");
     exit();
 }
-?>

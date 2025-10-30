@@ -8,21 +8,16 @@ $filter = $_GET['filter'] ?? 'all';
 // Build query based on sidebar selection
 switch ($filter) {
     case 'replied':
-        $feedbacks = $conn->query("SELECT * FROM feedback WHERE user_id=$user_id AND status='replied'");
+        $sql = "SELECT * FROM feedback WHERE user_id=$user_id AND status='replied' ORDER BY created_at DESC";
         break;
     case 'unreplied':
-        $feedbacks = $conn->query("SELECT * FROM feedback WHERE user_id=$user_id AND status='sent'");
+        $sql = "SELECT * FROM feedback WHERE user_id=$user_id AND status='sent' ORDER BY created_at DESC";
         break;
     default:
-        $feedbacks = $conn->query("SELECT * FROM feedback WHERE user_id=$user_id");
+        $sql = "SELECT * FROM feedback WHERE user_id=$user_id ORDER BY created_at DESC";
 }
+$feedbacks = $conn->query($sql);
 ?>
-
-<?php if (isset($_GET['success'])): ?>
-    <div class="alert success">Feedback added successfully!</div>
-<?php endif; ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,33 +40,41 @@ switch ($filter) {
 
     <!-- Main content -->
     <div class="main-content">
+        <?php if (isset($_GET['success'])): ?>
+            <div class="alert success">Feedback added successfully!</div>
+        <?php endif; ?>
+
         <h1 class="welcome-text">Welcome to Geek's Feedback Portal</h1>
         
         <div class="feedback-grid">
-            <!-- Add Card -->
-            <div class="feedback-card add-card" id="openModal">
-                <h2>＋ Add Feedback</h2>
-                <p>Click to give your feedback</p>
+
+            <!-- Add Feedback Card (opens modal) -->
+            <div class="feedback-card add-card" onclick="openAddFeedback()">
+                <div class="plus-sign">+</div>
+                <p>Add Feedback</p>
             </div>
 
-            <!-- Show Feedback -->
+            <!-- Feedback cards from DB -->
             <?php if ($feedbacks && $feedbacks->num_rows > 0): ?>
-                <?php while($row = $feedbacks->fetch_assoc()): ?>
+                <?php while ($row = $feedbacks->fetch_assoc()): ?>
                     <div class="feedback-card expandable" onclick="expandCard(this)">
                         <h3><?php echo htmlspecialchars($row['course_name']); ?></h3>
                         <p><?php echo htmlspecialchars($row['comment']); ?></p>
+                        <p><strong>Rating:</strong> <?php echo htmlspecialchars($row['rating']); ?>/5</p>
 
-                        <?php if ($row['admin_reply']): ?>
+                        <?php if (!empty($row['admin_reply'])): ?>
                             <p class="reply">💬 <?php echo htmlspecialchars($row['admin_reply']); ?></p>
+                        <?php else: ?>
+                            <p class="no-reply">No reply yet.</p>
                         <?php endif; ?>
 
                         <div class="actions">
                             <?php if ($row['status'] == 'sent'): ?>
-                                <a href="update_feedback.php?id=<?= $row['id'] ?>">✏️ Edit</a>
-                                <a href="delete_feedback.php?id=<?= $row['id'] ?>" onclick="return confirm('Delete this feedback?');">🗑 Delete</a>
+                                <a href="update_feedback.php?id=<?php echo $row['id']; ?>">✏️ Edit</a>
+                                <a href="delete_feedback.php?id=<?php echo $row['id']; ?>" onclick="return confirm('Delete this feedback?');">🗑 Delete</a>
                             <?php elseif ($row['status'] == 'replied' && empty($row['rating'])): ?>
                                 <form action="save_rating.php" method="POST">
-                                    <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                    <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
                                     <select name="rating" onchange="this.form.submit()">
                                         <option value="">Rate Reply ⭐</option>
                                         <option value="5">⭐⭐⭐⭐⭐</option>
@@ -97,41 +100,49 @@ switch ($filter) {
     </div>
 </div>
 
-<!-- Modal for adding feedback -->
-<div id="feedbackModal" class="modal">
+<!-- Modal for adding feedback (used by add-card and floating button) -->
+<div id="addFeedbackModal" class="modal">
     <div class="modal-content">
-        <span class="close" id="closeModal">&times;</span>
-        <h2>Add Feedback</h2>
-        <form action="save_feedback.php" method="POST">
+        <span class="close" id="closeAddModal">&times;</span>
+        <h2>Add New Feedback</h2>
+        <form id="addFeedbackForm" action="save_feedback.php" method="POST">
             <label>Course Name</label>
             <input type="text" name="course_name" required>
+
+            <label>Rating</label>
+            <select name="rating" required>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="1">⭐</option>
+            </select>
+
             <label>Comment</label>
             <textarea name="comment" required></textarea>
+
             <button type="submit">Submit</button>
         </form>
     </div>
 </div>
 
 <script>
-const modal = document.getElementById("feedbackModal");
-document.getElementById("openModal").onclick = () => modal.style.display = "flex";
-document.getElementById("closeModal").onclick = () => modal.style.display = "none";
-window.onclick = e => { if (e.target == modal) modal.style.display = "none"; };
+/* Modal open/close */
+const addModal = document.getElementById('addFeedbackModal');
+const closeAddBtn = document.getElementById('closeAddModal');
+function openAddFeedback() { addModal.style.display = 'flex'; }
+function closeAddFeedback() { addModal.style.display = 'none'; }
+closeAddBtn.onclick = () => closeAddFeedback();
+window.onclick = (e) => {
+    if (e.target === addModal) addModal.style.display = 'none';
+};
 
+/* Expand card behavior (toggle) */
 function expandCard(card) {
-  card.classList.toggle("expanded");
+  card.classList.toggle('expanded');
 }
 
-<
-    function openAddModal() {
-        document.getElementById('addFeedbackModal').style.display = 'flex';
-    }
-    function closeAddModal() {
-        document.getElementById('addFeedbackModal').style.display = 'none';
-    }
-
-
-
+/* Sidebar link active visual (purely client side) */
 const links = document.querySelectorAll('.sidebar ul li a');
 links.forEach(link => {
     link.addEventListener('click', e => {
@@ -139,10 +150,12 @@ links.forEach(link => {
         e.target.classList.add('active');
     });
 });
-
-
-
 </script>
+
+<!-- Floating Add Feedback Button -->
+<a href="javascript:openAddFeedback()" class="floating-btn" title="Add feedback">
+  <span>+</span>
+</a>
 
 </body>
 </html>

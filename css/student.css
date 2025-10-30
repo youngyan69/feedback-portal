@@ -1,125 +1,260 @@
+/* === GLOBAL STYLES === */
 body {
-    font-family: 'Poppins', sans-serif;
-    background: #f7f9fc;
-    margin: 0;
-    padding: 0;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  background-attachment: fixed;
+  font-family: 'Poppins', sans-serif;
+  color: #f0f0f0;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
 }
 
+/* === CONTAINER === */
 .container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  width: 95%;
+  max-width: 1100px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  animation: fadeIn 1s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* === TITLES === */
 h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 10px;
+  text-align: center;
+  font-size: 2.4rem;
+  color: #00d4ff;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  margin-bottom: 8px;
 }
 
 .subtitle {
-    text-align: center;
-    color: #777;
-    margin-bottom: 25px;
+  text-align: center;
+  color: #ccc;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
 }
 
+/* === FEEDBACK GRID === */
 .feedback-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
 }
 
+/* === FEEDBACK CARD === */
 .feedback-card {
-    background: #fff;
-    border: 1px solid #e6e6e6;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .feedback-card:hover {
-    transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+  border-color: rgba(0, 212, 255, 0.3);
 }
 
 .feedback-card p {
-    margin: 6px 0;
-    color: #444;
+  margin: 6px 0;
+  color: #f2f2f2;
 }
 
+.feedback-card strong {
+  color: #00d4ff;
+}
 
+/* === ADMIN REPLY === */
 .reply {
-    background-color: #e8f5e9;
-    border-left: 4px solid #4caf50;
-    padding: 10px;
-    margin-top: 8px;
-    border-radius: 6px;
-    font-style: italic;
-}
-
-.no-reply {
-    color: #999;
-    font-style: italic;
+  background: rgba(46, 204, 113, 0.15);
+  border-left: 4px solid #2ecc71;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-style: italic;
 }
 
 .reply strong {
-    color: #1b5e20;
+  color: #2ecc71;
 }
 
+.no-reply {
+  color: #aaa;
+  font-style: italic;
+}
 
+/* === ACTION BUTTONS === */
 .actions {
-    margin-top: 12px;
-    display: flex;
-    justify-content: space-between;
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .actions a {
-    text-decoration: none;
-    font-size: 14px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    color: white;
-    background: #007bff;
-    transition: background 0.2s ease;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #fff;
+  transition: all 0.25s ease;
 }
 
-.actions a:hover {
-    background: #0056b3;
+.actions a:first-child {
+  background: linear-gradient(135deg, #007bff, #00bfff);
+  box-shadow: 0 0 8px rgba(0, 191, 255, 0.5);
+}
+
+.actions a:first-child:hover {
+  background: linear-gradient(135deg, #00bfff, #007bff);
+  transform: translateY(-2px);
 }
 
 .actions a:last-child {
-    background: #dc3545;
+  background: linear-gradient(135deg, #dc3545, #ff4d6d);
+  box-shadow: 0 0 8px rgba(255, 77, 109, 0.4);
 }
 
 .actions a:last-child:hover {
-    background: #b02a37;
+  background: linear-gradient(135deg, #ff4d6d, #dc3545);
+  transform: translateY(-2px);
 }
 
+/* === TIMESTAMP === */
 .timestamp {
-    text-align: right;
-    color: #888;
-    font-size: 12px;
-    margin-top: 8px;
+  text-align: right;
+  color: #aaa;
+  font-size: 12px;
+  margin-top: 10px;
 }
 
-@media (max-width: 600px) {
-    .feedback-card {
-        padding: 15px;
-    }
-
-    h1 {
-        font-size: 22px;
-    }
-}
-
+/* === ALERT MESSAGES === */
 .alert.success {
-    background: #c8e6c9;
-    color: #256029;
-    padding: 10px 20px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    display: inline-block;
+  background: rgba(40, 167, 69, 0.2);
+  color: #7fffa8;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  display: inline-block;
+  border-left: 4px solid #00ff80;
+}
+
+/* === ADD FEEDBACK CARD === */
+.add-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed rgba(0, 212, 255, 0.4);
+  border-radius: 20px;
+  background: rgba(0, 212, 255, 0.08);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  color: #00d4ff;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+  min-height: 180px;
+  text-align: center;
+  margin: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-card:hover {
+  background: rgba(0, 212, 255, 0.25);
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(0, 212, 255, 0.4);
+  border-color: rgba(0, 212, 255, 0.7);
+}
+
+.add-card .plus-sign {
+  font-size: 64px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #00e0ff;
+  text-shadow: 0 0 15px rgba(0, 224, 255, 0.9);
+}
+
+.add-card p {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #e6faff;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 600px) {
+  .container {
+    padding: 25px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .feedback-card {
+    padding: 15px;
+  }
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Floating Add Feedback Button === */
+.floating-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, #00d4ff, #007bff);
+  color: white;
+  font-size: 38px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+  transition: all 0.3s ease;
+  z-index: 999;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.floating-btn:hover {
+  transform: scale(1.1) rotate(10deg);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.8);
+  background: linear-gradient(135deg, #00e0ff, #009fff);
+}
+
+.floating-btn span {
+  position: relative;
+  top: -3px;
+}
+
+/* Optional glowing pulse animation */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.6); }
+  50% { box-shadow: 0 0 35px rgba(0, 212, 255, 0.9); }
+  100% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.6); }
+}
+
+.floating-btn {
+  animation: pulse-glow 2s infinite;
 }
