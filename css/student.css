@@ -114,3 +114,12 @@ h1 {
         font-size: 22px;
     }
 }
+
+.alert.success {
+    background: #c8e6c9;
+    color: #256029;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: inline-block;
+}

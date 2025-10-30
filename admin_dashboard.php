@@ -2,65 +2,74 @@
 session_start();
 include 'db.php';
 
-// Only admins can access this page
-//if ($_SESSION['role'] != 'admin') {
-    //header("Location: index.php");
-    //exit();
-//}
+// Only admins should access
+// if ($_SESSION['role'] != 'admin') {
+//     header("Location: index.php");
+//     exit();
+// }
 
-// Handle reply submission
-if (isset($_POST['reply'])) {
-    $feedback_id = $_POST['feedback_id'];
-    $reply_text = $_POST['reply_text'];
-    $conn->query("UPDATE feedback SET admin_reply='$reply_text' WHERE id=$feedback_id");
-}
-
-// Fetch all feedbacks
+// Fetch all feedbacks and their replies
 $feedbacks = $conn->query("
-    SELECT f.*, u.name AS student_name, u.email 
-    FROM feedback f 
-    JOIN users u ON f.user_id = u.id 
+    SELECT f.*, u.name AS student_name, u.email, r.reply AS admin_reply
+    FROM feedback f
+    JOIN users u ON f.user_id = u.id
+    LEFT JOIN replies r ON f.id = r.feedback_id
     ORDER BY f.created_at DESC
 ");
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Feedback Portal</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+
+    <!-- Include the sidebar -->
+    <?php include('admin_sidebar.php'); ?>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
         <h1>Admin Dashboard</h1>
-        <p class="subtitle">View student feedback and reply</p>
+        <p class="subtitle">Manage and reply to student feedback</p>
 
         <div class="feedback-grid">
-            <?php while($row = $feedbacks->fetch_assoc()): ?>
-            <div class="feedback-card">
-                <div class="card-header">
-                    <h2><?php echo htmlspecialchars($row['student_name']); ?></h2>
-                    <p><?php echo htmlspecialchars($row['email']); ?></p>
-                </div>
+            <?php if ($feedbacks->num_rows > 0): ?>
+                <?php while($row = $feedbacks->fetch_assoc()): ?>
+                <div class="feedback-card">
+                    <div class="card-header">
+                        <div>
+                            <h2><?php echo htmlspecialchars($row['student_name']); ?></h2>
+                            <p class="email"><?php echo htmlspecialchars($row['email']); ?></p>
+                        </div>
+                    </div>
 
-                <div class="card-body">
-                    <p><strong>Course:</strong> <?php echo htmlspecialchars($row['course_name']); ?></p>
-                    <p><strong>Feedback:</strong> <?php echo htmlspecialchars($row['comment']); ?></p>
+                    <div class="card-body">
+                        <p><strong>Course:</strong> <?php echo htmlspecialchars($row['course_name']); ?></p>
+                        <p><strong>Rating:</strong> ⭐ <?php echo htmlspecialchars($row['rating']); ?>/5</p>
+                        <p><strong>Comment:</strong> <?php echo htmlspecialchars($row['comment']); ?></p>
 
-                    <?php if (!empty($row['admin_reply'])): ?>
-                        <p class="reply"><strong>Your Reply:</strong> <?php echo htmlspecialchars($row['admin_reply']); ?></p>
-                    <?php else: ?>
-                        <form method="POST" class="reply-form">
-                            <input type="hidden" name="feedback_id" value="<?php echo $row['id']; ?>">
-                            <textarea name="reply_text" placeholder="Write a reply..." required></textarea>
-                            <button type="submit" name="reply">Send Reply</button>
-                        </form>
-                    <?php endif; ?>
+                        <?php if ($row['admin_reply']): ?>
+                            <p class="reply"><strong>Admin Reply:</strong> <?php echo htmlspecialchars($row['admin_reply']); ?></p>
+                        <?php else: ?>
+                            <a href="reply_feedback.php?id=<?php echo $row['id']; ?>" class="reply-btn">Reply</a>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="card-footer">
+                        <small>🕒 <?php echo date("F j, Y, g:i a", strtotime($row['created_at'])); ?></small>
+                    </div>
                 </div>
-            </div>
-            <?php endwhile; ?>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <p style="text-align:center; color:gray;">No feedback found.</p>
+            <?php endif; ?>
         </div>
     </div>
+
 </body>
 </html>
