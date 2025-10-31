@@ -1,48 +1,45 @@
 <?php
 include 'db.php';
-session_start();
-$message = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
     $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $role = $_POST['role'];
 
-    $check = $conn->prepare("SELECT id FROM users WHERE email=?");
-    $check->bind_param("s", $email);
-    $check->execute();
-    $check->store_result();
+    $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $name, $email, $password, $role);
 
-    if ($check->num_rows > 0) {
-        $message = "Email already exists.";
-    } else {
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $name, $email, $password);
-        $stmt->execute();
-
-        $_SESSION['user_id'] = $stmt->insert_id;
-        header("Location: verify.php");
+    if ($stmt->execute()) {
+        header("Location: index.php");
         exit();
+    } else {
+        $error = "Registration failed.";
     }
 }
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <title>Register | Student Feedback Portal</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="register-page">
-    <div class="form-container">
-        <h2>Create Account</h2>
-        <form method="POST">
-            <input type="text" name="name" placeholder="Full Name" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Register</button>
-            <p>Already have an account? <a href="login.php">Login</a></p>
-        </form>
-        <p class="msg"><?= $message ?></p>
-    </div>
+<body>
+  <form method="POST" class="login-container">
+    <h2 style="color: cyan;">Register</h2>
+    <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
+    <input type="text" name="name" placeholder="Full Name" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <select name="role" required>
+      <option value="">Select Role</option>
+      <option value="student">Student</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button type="submit">Register</button>
+    <p>Already have an account? <a href="index.php" style="color: cyan;">Login</a></p>
+  </form>
 </body>
 </html>

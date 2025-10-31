@@ -2,43 +2,19 @@
 session_start();
 include 'db.php';
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id = $_SESSION['id'] ?? 1; // temporary fallback for testing
-    $course = $_POST['course'];
-    $rating = $_POST['rating'];
-    $comment = $_POST['comment'];
-
-    $stmt = $conn->prepare("INSERT INTO feedback (user_id, course_name, rating, comment, created_at) VALUES (?, ?, ?, ?, NOW())");
-    $stmt->bind_param("isis", $user_id, $course, $rating, $comment);
-    $stmt->execute();
-
-    header("Location: dashboard.php?success=1");
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+    header("Location: index.php");
     exit();
 }
-?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Feedback</title>
-    <link rel="stylesheet" href="css/student.css">
-</head>
-<body>
-<div class="container">
-    <h1>Add New Feedback</h1>
-    <form method="POST">
-        <label>Course Name:</label>
-        <input type="text" name="course" required>
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $user_id = $_SESSION['user_id'];
+    $course = $conn->real_escape_string($_POST['course_name'] ?? $_POST['course'] ?? '');
+    $comment = $conn->real_escape_string($_POST['comment'] ?? '');
+    $stmt = $conn->prepare("INSERT INTO feedback (user_id, course_name, comment, status, created_at) VALUES (?, ?, ?, 'sent', NOW())");
+    $stmt->bind_param("iss", $user_id, $course, $comment);
+    $stmt->execute();
+}
 
-        <label>Rating (1–5):</label>
-        <input type="number" name="rating" min="1" max="5" required>
-
-        <label>Comment:</label>
-        <textarea name="comment" required></textarea>
-
-        <button type="submit" class="btn">Submit Feedback</button>
-    </form>
-</div>
-</body>
-</html>
+header("Location: student_dashboard.php");
+exit();

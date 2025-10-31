@@ -1,27 +1,24 @@
 <?php
-include 'db.php';
 session_start();
+include 'db.php';
 
-// Only admins can reply
-if ($_SESSION['role'] != 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: index.php");
     exit();
 }
 
-if (isset($_POST['id']) && isset($_POST['reply'])) {
-    $id = intval($_POST['id']);
-    $reply = trim($_POST['reply']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['reply'])) {
+    $id = (int)$_POST['id'];
+    $reply = $conn->real_escape_string(trim($_POST['reply']));
 
-    $stmt = $conn->prepare("UPDATE feedback SET admin_reply = ? WHERE id = ?");
+    // Update feedback with admin reply and set status to replied
+    $sql = "UPDATE feedback SET admin_reply = ?, status = 'replied' WHERE id = ?";
+    $stmt = $conn->prepare($sql);
     $stmt->bind_param("si", $reply, $id);
+    $stmt->execute();
 
-    if ($stmt->execute()) {
-        header("Location: admin_dashboard.php?msg=replied");
-        exit();
-    } else {
-        echo "Error: " . $conn->error;
-    }
-} else {
-    echo "Invalid data.";
+    header("Location: admin_dashboard.php?filter=replied");
+    exit();
 }
-?>
+
+header("Location: admin_dashboard.php");
